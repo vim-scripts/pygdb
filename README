@@ -1,0 +1,18 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=2270
+
+pygdb is a pygtk interface to gdb. It offers two terminal windows, one for gdb, one for the process to be debugged. On the top it has standard buttons like run, continue, step in, step over, step out and quit. On a second window you can add watches and breakpoints. Furthermore, you can inspect the backtrace and launch gvim on the current executed line by pressing a button.
+
+pygdb stays synchronized with gvim (by using gvim --servername calls). The package provides a pygdb.vim which enables the user to set (conditional) breakpoints and the current execution line is highlighted as well.
+
+Default key mappings:
+F5: Run
+F8: Toggle breakpoint
+S-F8: Conditional breakpoint
+F9: Show breakpoints
+S-F9: Load config
+
+The package is in a very young state but I guess it is more or less usable. You may want to give it a try or look for some screenshots at
+http://www.cosy.sbg.ac.at/~shuber/code-pygdb.php
+at first. This project is somehow similar to vdb (vimscript #1703). The main difference is that vdb tries to integrate gdb completely into vim, in contrast to pygdb. However, under some assumptions on the debugger, other debuggers can be integrated easily as well. (Just inherit the DbgTerminal python class)
+
+P.S. I don't have gvim-6 -- is anyone experiencing that the script works with vim-6 as well?
