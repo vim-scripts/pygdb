@@ -1,4 +1,11 @@
-"shuber, 2008-06-08
+"pygdb.vim - pygtk interface to gdb in connection with (g)vim
+" Maintainer: Stefan Huber <shuber@cosy.sbg.ac.at>
+
+
+if !has('python')
+	echo "Error: Required vim compiled with +python"
+	finish
+endif
 
 if ! exists("g:pygdb")
 
@@ -28,9 +35,17 @@ clientcmd = ""
 execsign = None
 
 def gdbLaunch():
-	global gdbterm, mainctrlwnd, statuswnd, gdbBps, clientcmd, gdbthread
+	global gdbBps, clientcmd
 
-	clientcmd = vim.eval("input('Client commando: ', '%s')" % clientcmd).strip()
+	clientcmd = vim.eval("input('Client commando: ', '%s')" % clientcmd)
+	
+	#Pressed esq?
+	if clientcmd == None:
+		clientcmd = ""
+		return
+
+	#Strip away white space
+	clientcmd = clientcmd.strip()
 
 	if clientcmd.strip()=="":
 		print "No command given!"
@@ -44,7 +59,7 @@ def gdbLaunch():
 		conf.addBreak(bp["file"], bp["lineno"], bp["cond"])
 	conf.store(".pygdb.conf")
 	
-	vim.command("!python %s/pygdb.py %s &\n" % (pygdbdir, clientcmd))
+	vim.command("!python %s/pygdb.py --vim-servername %s %s &\n" % (pygdbdir, vim.eval("v:servername"), clientcmd))
 
 
 def gdbToggleBreakpoint(lineno=None, file=None):
@@ -198,7 +213,12 @@ def toAbsPath(path):
 
 		#We need the client command to expand the paths...
 		while clientcmd == "" or not cmdset:
-			clientcmd = vim.eval("input('Client commando: ', '%s')" % clientcmd).strip()
+			clientcmd = vim.eval("input('Client commando: ', '%s')" % clientcmd)
+
+			if clientcmd == None:
+				clientcmd = ""
+			clientcmd = clientcmd.strip()
+
 			cmdset = True
 
 		#Get the dirs where executeable is in
@@ -215,8 +235,6 @@ def gdbLoadConfig():
 	global clientcmd, gdbBps, cmdset
 
 
-
-
 	#Load configuration
 	conf = Configuration.Configuration()
 	conf.load(".pygdb.conf")
@@ -229,6 +247,10 @@ def gdbLoadConfig():
 	for bp in conf.breakpoints:
 		bp["file"] = toAbsPath( bp["file"] )
 		addBreakpoint(bp["file"], bp["lineno"], bp["cond"])
+
+	#Set the command from config
+	if conf.getCommand() != None:
+		clientcmd = conf.getCommand()
 	
 	#Set current execution line
 	if conf.isCurrposSet():
@@ -236,6 +258,7 @@ def gdbLoadConfig():
 		setExecutionLine(file, conf.currlineno)
 	else:
 		delExecutionLine()
+
 >>
 
 highlight ExecutionLine term=bold ctermbg=DarkGreen ctermfg=Black guibg=LightGreen guifg=Black

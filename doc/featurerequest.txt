@@ -1,12 +1,9 @@
 Smaller requests
-  - Scrollbar for terminals
 
 Medium requestes:
   - Deactivate breakpoints
 
 Bigger requests:
-  - several vim sessions are not possible since servername
-    is always the same. --> parametrize servername by vim
   - bidirectional, immediate communication with vim:
     updating breakpoints when setting in vim.
          

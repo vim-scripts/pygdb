@@ -19,7 +19,7 @@ class StatusFrame (gtk.Frame):
 	def fillConfiguration(self, conf):
 		raise NotImplemented()
 
-	def updateValues(self, pos):
+	def updateValues(self, status, param):
 		raise NotImplemented()
 
 

@@ -2,19 +2,18 @@
 1. Put the pygdb directory to somewhere, lets call it <dir> in this help file.
 2. Add the following lines into your ~/.vimrc:
 
-	python << >>
-	import sys
+      """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+      "  pygdb
+      """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+      
+      autocmd Filetype c,cpp :python import sys
+      autocmd Filetype c,cpp :python sys.path.append("<dir>")
+      autocmd Filetype c,cpp source <dir>/pygdb.vim
+      autocmd Filetype c,cpp call GDBMapDefaults()
 
-	#Do not use a ~ for home directory
-	pygdbdir = "<dir>" 
-	sys.path.append(pygdbdir)
-	>>
-
-	autocmd BufRead *.c* source <dir>/pygdb.vim
-	autocmd BufRead *.c* call GDBMapDefaults()
 
    where you replace <dir> by the corresponding path of pygdb. You may want to
-   add <dir> to the environment variable PATH such that you cou can call pygdb
+   add <dir> to the environment variable PATH such that you can call pygdb
    from console directly.
 
    If you like, you can add the following line. It leads to a configuration file

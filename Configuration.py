@@ -21,6 +21,7 @@ class Configuration:
 		self.watches = []
 		self.ints = []
 		self.currfile, self.currlineno = None, 0
+		self.command = None
 
 
 	def load(self, filename):
@@ -45,6 +46,8 @@ class Configuration:
 					self.parseInt(tail)
 				elif cmd == "currpos":
 					self.parseCurrpos(tail)
+				elif cmd == "cmd":
+					self.parseCommand(tail)
 				else:
 					cnt -= 1
 					print "Unkown command", cmd
@@ -70,6 +73,9 @@ class Configuration:
 
 			if self.isCurrposSet():
 				self.__writeCurrpos(f)
+
+			if self.getCommand() != None:
+				self.__writeCommand(f)
 
 			f.close()
 			return True
@@ -129,6 +135,9 @@ class Configuration:
 
 		self.setCurrpos(file, lineno)
 
+	def parseCommand(self, tail):
+		self.command = tail
+
 
 	def __writeBreak(self, f, b):
 		if b["cond"] != None:
@@ -144,6 +153,9 @@ class Configuration:
 
 	def __writeCurrpos(self, f):
 		f.write("currpos %s:%d\n" % (self.currfile, self.currlineno))
+
+	def __writeCommand(self, f):
+		f.write("cmd %s\n" % self.command)
 
 
 	def addBreak(self, file, lineno, cond=None):
@@ -166,10 +178,16 @@ class Configuration:
 
 	def isCurrposSet(self):
 		return self.currfile!=None
+	
 
 	def delCurrpos(self):
 		self.currfile = None
 
+	def setCommand(self,cmd):
+		self.command = cmd
+
+	def getCommand(self):
+		return self.command
 
 	def findInt(self, name):
 		for i in self.ints:

@@ -41,7 +41,7 @@ class MainControlWindow (gtk.Window):
 		#Button box
 		hbtnbox = gtk.HBox(False, spacing=5)
 		#hbtnbox.set_layout(gtk.BUTTONBOX_START)
-		vbox.pack_start(hbtnbox)
+		vbox.pack_start(hbtnbox, expand=False)
 
 		self.runBtn = gtk.Button("Run")
 		hbtnbox.add(self.runBtn)
@@ -58,9 +58,21 @@ class MainControlWindow (gtk.Window):
 
 		#Vertical pane for terminals
 		vpaned = gtk.VPaned()
-		vbox.pack_start(vpaned, True, True)
-		vpaned.add(self.dbgterm)
-		vpaned.add(self.clientioterm)
+		vbox.pack_start(vpaned)
+
+		#Debugger terminal
+		hbox = gtk.HBox(False, 0)
+		vpaned.pack1(hbox, resize=True)
+		scrollbar = gtk.VScrollbar(dbgterm.get_adjustment())
+		hbox.pack_start(dbgterm)
+		hbox.pack_start(scrollbar, expand=False)
+
+		#Client I/O terminal
+		hbox = gtk.HBox(False, 0)
+		vpaned.pack2(hbox)
+		scrollbar = gtk.VScrollbar(self.clientioterm.get_adjustment())
+		hbox.pack_start(self.clientioterm)
+		hbox.pack_start(scrollbar, expand=False)
 
 
 		#Install handlers

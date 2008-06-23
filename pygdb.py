@@ -15,14 +15,86 @@ import MainControlWindow
 import StatusWindow
 
 
-def launchDebugger(clientCmd):
+
+def getArgs():
+	args = {}
+
+	try:
+
+		i=1
+		while i < len(sys.argv):
+
+			if sys.argv[i] == "--help":
+				args["--help"] = True
+
+			elif sys.argv[i] == "--vim-servername":
+				i += 1
+				args["--vim-servername"] = sys.argv[i]
+
+			else:
+				args["cmd"] = string.join(sys.argv[i:])
+				return args
+
+			i += 1
+
+	except Exception, e:
+		return False
+
+	return args
+
+
+def printHelp(f):
+
+	f.write("""Call pygdb with a specific command to be debugged.
+	
+Usage:
+   %s --help
+   %s [--vim-servername NAME] <command>
+
+where <command> is the command to call the client that should
+be debugged.
+
+  --help
+    Print help text.
+
+  --vim-servername NAME
+     The servername of the vim to communicate with
+""" % (sys.argv[0], sys.argv[0]) )
+
+
+
+
+if __name__ == "__main__":
+
+
+	#Get the arguments
+	args = getArgs()
+
+	if args == None:
+		printHelp(sys.stderr)
+		sys.exit(-1)
+	
+	if "--help" in args.keys():
+		printHelp(sys.stdout)
+		sys.exit(0)
+
+	if not "cmd" in args.keys():
+		sys.stderr.write("Please give executeable to debug.")
+		sys.exit(-2)
+
+	if "--vim-servername" in args.keys():
+		vimservername = args["--vim-servername"]
+	else:
+		vimservername = "pygdb"
+
+
 
 	#Create Terminal
-	dbgterm = GdbTerminal.GdbTerminal(clientCmd)
+	dbgterm = GdbTerminal.GdbTerminal(args["cmd"])
 
 	#Create windows
 	mainCtrlWnd = MainControlWindow.MainControlWindow(dbgterm)
-	statusWnd = StatusWindow.StatusWindow(dbgterm)
+	statusWnd = StatusWindow.StatusWindow(dbgterm, vimservername)
 	dbgterm.initialize()
 
 	#Load configuration
@@ -38,19 +110,7 @@ def launchDebugger(clientCmd):
 	conf.delCurrpos()
 	conf.store(".pygdb.conf")
 		
-	DbgTerminal.updateVim()
+	statusWnd.updateVim()
 
-
-
-if __name__ == "__main__":
-
-	#Check if enough arguments are given
-	if len(sys.argv) <= 1:
-		print "Please give executeable to debug."
-		sys.exit(-1)
-
-	#Create the terminals
-	clientCmd = string.join(sys.argv[1:])
-	launchDebugger(clientCmd)
 
 

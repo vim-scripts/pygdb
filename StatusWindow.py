@@ -20,9 +20,10 @@ import WatchesFrame
 
 class StatusWindow (gtk.Window):
 
-	def __init__(self, debugger):
+	def __init__(self, debugger, vimservername):
 		gtk.Window.__init__(self)
 
+		self.vimservername = vimservername
 		self.debugger = debugger
 		self.debugger.gotActiveCallback += [self.updateValues]
 		
@@ -89,6 +90,8 @@ class StatusWindow (gtk.Window):
 		conf.addInt("statuswnd-paned1", self.paned1.get_position())
 		conf.addInt("statuswnd-paned2", self.paned2.get_position())
 
+		conf.setCommand( self.debugger.clientCmd )
+
 		for f in self.frames:
 			f.fillConfiguration(conf)
 
@@ -99,7 +102,12 @@ class StatusWindow (gtk.Window):
 		self.fillConfiguration(conf)
 		conf.store(".pygdb.conf")
 
-		DbgTerminal.updateVim()
+		self.updateVim()
 
+
+	def updateVim(self):
+
+		os.system('gvim --servername %s --remote-send "<ESC> :GDBLoadConfig<CR>"' % \
+			self.vimservername)
 
 

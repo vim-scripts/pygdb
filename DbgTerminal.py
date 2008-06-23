@@ -244,10 +244,6 @@ def quitHandler(*w):
 		pass
 
 
-def updateVim():
-	os.system('gvim --servername pygdb --remote-send "<ESC> :GDBLoadConfig<CR>"')
-
-
 def relToAbsPath(absfile, relfile):
 	"""When an absfile is given and a relfile is given by
 	relative paths relative to absfile, determine the abs
