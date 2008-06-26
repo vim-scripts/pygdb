@@ -35,7 +35,7 @@ clientcmd = ""
 execsign = None
 
 def gdbLaunch():
-	global gdbBps, clientcmd
+	global gdbBps, clientcmd, pygdbdir
 
 	clientcmd = vim.eval("input('Client commando: ', '%s')" % clientcmd)
 	

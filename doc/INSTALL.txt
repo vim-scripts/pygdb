@@ -6,10 +6,12 @@
       "  pygdb
       """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
       
-      autocmd Filetype c,cpp :python import sys
-      autocmd Filetype c,cpp :python sys.path.append("<dir>")
-      autocmd Filetype c,cpp source <dir>/pygdb.vim
-      autocmd Filetype c,cpp call GDBMapDefaults()
+	autocmd Filetype c,cpp :python import sys
+	autocmd Filetype c,cpp :python import vim
+	autocmd Filetype c,cpp :python pygdbdir = "<dir>"
+	autocmd Filetype c,cpp :python sys.path.append(pygdbdir)
+	autocmd Filetype c,cpp :python vim.command("source %s/pygdb.vim" % pygdbdir)
+	autocmd Filetype c,cpp call GDBMapDefaults()
 
 
    where you replace <dir> by the corresponding path of pygdb. You may want to
@@ -18,5 +20,5 @@
 
    If you like, you can add the following line. It leads to a configuration file
    loading when opening a source file
-	autocmd BufRead *.c* :GDBLoadConfig<CR>
+	autocmd BufRead *.c*  :GDBLoadConfig
 

@@ -113,13 +113,18 @@ class GdbTerminal (DbgTerminal.DbgTerminal):
 			no = string.split(line)[0]
 
 			#This line does not contain the file!
+			#Check for next line...
 			if not rxpos.search(line):
+				i += 1
+			if not rxpos.search(line):
+				i += 1
 				continue
 
 			pos = string.split(line)[-1]
 			[file,lineno] = string.split(pos,":")
 			cond = None
 
+			#Look for conditions
 			if i+1<len(bplines) and rxcond.search(bplines[i+1]):
 				i +=1
 				line = bplines[i]

@@ -4,12 +4,10 @@
 __author__ = "shuber"
 
 import gtk
-import os
 import string
 import sys
 
 import Configuration
-import DbgTerminal
 import GdbTerminal
 import MainControlWindow
 import StatusWindow
@@ -37,7 +35,7 @@ def getArgs():
 
 			i += 1
 
-	except Exception, e:
+	except Exception:
 		return False
 
 	return args
