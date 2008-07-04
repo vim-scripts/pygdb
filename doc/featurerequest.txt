@@ -1,6 +1,9 @@
 Smaller requests
 
 Medium requestes:
+  - local variables frame
+  - double-click on backtrace entries --> open source file
+  - keyboard shortcuts for run/continue/etc
   - Deactivate breakpoints
 
 Bigger requests:

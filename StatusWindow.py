@@ -40,7 +40,7 @@ class StatusWindow (gtk.Window):
 	
 		#Adding the frames
 		self.frames = []
-		self.frames += [PositionFrame.PositionFrame(debugger), \
+		self.frames += [PositionFrame.PositionFrame(debugger,self), \
 				WatchesFrame.WatchesFrame(debugger), \
 				BreakpointsFrame.BreakpointsFrame(debugger) ]
 
@@ -106,8 +106,12 @@ class StatusWindow (gtk.Window):
 
 
 	def updateVim(self):
-
 		os.system('gvim --servername %s --remote-send "<ESC> :GDBLoadConfig<CR>"' % \
 			self.vimservername)
+
+	def gotoVim(self, file, lineno):
+		file = self.debugger.toAbsPath(file)		
+		os.system('gvim --servername %s --remote-send "<ESC>:e %s<CR>:%s<CR>"' % \
+			(self.vimservername, file, lineno))
 
 

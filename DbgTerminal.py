@@ -100,6 +100,8 @@ class DbgTerminal (vte.Terminal):
 					for cb in self.gotInactiveCallback:
 						cb(status, param)
 		except Exception, e:
+			import traceback
+			traceback.print_exc()
 			print e
 
 		return True

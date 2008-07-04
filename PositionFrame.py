@@ -18,15 +18,17 @@ import StatusFrame
 class PositionFrame (StatusFrame.StatusFrame):
 
 
-	def __init__(self, debugger):
+	def __init__(self, debugger, statuswnd):
 
 		StatusFrame.StatusFrame.__init__(self, debugger)
 		self.set_label("Position")
 
+		self.statuswnd = statuswnd
 		debugger.gotActiveCallback += [self.updateValues]
 		debugger.gotInactiveCallback += [self.updateValues]
 
 		self.file = None
+		self.bt = None
 		self.lineno = 0
 
 		vbox = gtk.VBox(False, 5)
@@ -44,10 +46,52 @@ class PositionFrame (StatusFrame.StatusFrame):
 		sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
 		vbox.add(sw)
 
-		self.srcview = gtk.TextView()
-		sw.add(self.srcview)
+		self.model = self.__createModel()
+		self.tv = gtk.TreeView(self.model)
+		self.tv.set_rules_hint(True)
+		self.tv.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
+		self.tv.connect("row-activated", self.rowactivated)
+
+		self.__addColumns(self.tv)
+		sw.add(self.tv)
 
 		self.openBtn.connect("clicked", self.openBtnClicked)
+
+
+	def __createModel(self):	
+		model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING, \
+				gobject.TYPE_STRING, gobject.TYPE_STRING)
+
+		return model
+
+
+	def __addColumns(self, tv):
+
+		model = tv.get_model()
+
+		renderer = gtk.CellRendererText()
+		renderer.set_data("column", 0)
+		col = gtk.TreeViewColumn("Addr", renderer, text=0)
+		col.set_resizable(True)
+		tv.append_column(col)
+
+		renderer = gtk.CellRendererText()
+		renderer.set_data("column", 1)
+		col = gtk.TreeViewColumn("Func", renderer, text=1)
+		col.set_resizable(True)
+		tv.append_column(col)
+
+		renderer = gtk.CellRendererText()
+		renderer.set_data("column", 2)
+		col = gtk.TreeViewColumn("File", renderer, text=2)
+		col.set_resizable(True)
+		tv.append_column(col)
+
+		renderer = gtk.CellRendererText()
+		renderer.set_data("column", 3)
+		col = gtk.TreeViewColumn("Lin", renderer, text=3)
+		col.set_resizable(True)
+		tv.append_column(col)
 
 
 	def openBtnClicked(self, btn):
@@ -68,22 +112,49 @@ class PositionFrame (StatusFrame.StatusFrame):
 				dialog.destroy()
 
 
+	def rowactivated(self, tv, path, col, *w):
+		no, = path
+		no = int(no)
+		entry = self.bt[no]
+		self.statuswnd.gotoVim(entry[2], entry[3])
+
+	
+
 	def updateValues(self, status, param):
 		
-		#Create new text buffer for source view
-		buf = gtk.TextBuffer()
 
-		if status == "break":		
+		#Remove them all
+		iter = self.model.get_iter_first()
+		while iter != None:
+			newiter = self.model.iter_next(iter)
+			self.model.remove(iter)
+			iter = newiter
+
+
+		if status == "break":
+
+	
+			#Set current file position
 			self.file, self.lineno = param
 			self.positionLabel.set_label("%s:%d" % (self.file, self.lineno))
 
-			#Get some code
-			code = string.join(self.debugger.getBacktrace(), "\n")
-			buf.set_text(code)
+			#Add the entries
+			self.bt = self.debugger.getBacktrace()
+			for [addr, func, file, lineno] in self.bt:
+				iter = self.model.append()
+
+				if addr!=None:
+					self.model.set(iter, 0, addr)	
+
+				self.model.set(iter, 1, func)
+				self.model.set(iter, 2, file)
+				self.model.set(iter, 3, lineno)
+
 
 
 		else:
 			self.file, self.lineno = None, None
+			self.bt = None
 			code = ""
 
 			if status == "exited":
@@ -96,10 +167,6 @@ class PositionFrame (StatusFrame.StatusFrame):
 				self.positionLabel.set_label(status)
 
 	
-		#Set the buffer
-		self.srcview.set_buffer(buf)
-
-
 		
 
 	def applyConfiguration(self, conf):

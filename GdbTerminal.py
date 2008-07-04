@@ -95,44 +95,47 @@ class GdbTerminal (DbgTerminal.DbgTerminal):
 		bplines = self.__getAnswerFromCmd("info breakpoints\n")
 
 		rxbp = re.compile("^\d+\s+breakpoint")
-		rxpos = re.compile("^.*at \S+:\d+$")
+		rxpos = re.compile("at \S+:\d+$")
 		rxcond = re.compile("^\s+stop only if")
 
 		bpnts = []
-		i = 1
 
-		#Parse the resulting lines
-		while i<len(bplines):
-			line = bplines[i]
+		try:
+			i = 1
 
-			if not rxbp.search(line):
-				i += 1
-				continue
-	
-			#Get number of breakpoint
-			no = string.split(line)[0]
+			#Parse the resulting lines
+			while i<len(bplines):
 
-			#This line does not contain the file!
-			#Check for next line...
-			if not rxpos.search(line):
-				i += 1
-			if not rxpos.search(line):
-				i += 1
-				continue
-
-			pos = string.split(line)[-1]
-			[file,lineno] = string.split(pos,":")
-			cond = None
-
-			#Look for conditions
-			if i+1<len(bplines) and rxcond.search(bplines[i+1]):
-				i +=1
 				line = bplines[i]
-				cond = string.join(string.split(line," if ")[1:], " if ")
-				cond = cond.strip()
+				while not rxbp.search(line):
+					i += 1
+					line = bplines[i]
+		
+				#Get number of breakpoint
+				no = string.split(line)[0]
 
-			bpnts += [[no, file, lineno, cond]]
-			i += 1
+				#This line does not contain the file!
+				#Check for next line...
+				while not rxpos.search(line):
+					i += 1
+					line = bplines[i]
+
+				pos = string.split(line)[-1]
+				[file,lineno] = string.split(pos,":")
+				cond = None
+
+				#Look for conditions
+				if i+1<len(bplines) and rxcond.search(bplines[i+1]):
+					i +=1
+					line = bplines[i]
+					cond = string.join(string.split(line," if ")[1:], " if ")
+					cond = cond.strip()
+
+				bpnts += [[no, file, lineno, cond]]
+				i += 1
+
+		except IndexError:
+			pass
 
 		return bpnts
 		
@@ -153,7 +156,52 @@ class GdbTerminal (DbgTerminal.DbgTerminal):
 		return self.__getAnswerFromCmd("list\n")
 
 	def getBacktrace(self):
-		return self.__getAnswerFromCmd("bt\n")
+
+		stack = []
+		answ = self.__getAnswerFromCmd("bt\n")
+
+		rxstartfull = re.compile("^\#\d+\s+0x[0-9a-f]+\s+in\s+\S+\s+\(")
+		rxstartshort = re.compile("^\#\d+\s+\S+\s+\(")
+		rxpos = re.compile("at \S+:\d+$")
+
+		try:
+
+			i=0
+			while i<len(answ):
+				line = answ[i]
+
+				while not rxstartfull.search(line) and not rxstartshort.search(line):
+					print "Warning: '", line, "' does not match bt entry."
+					i+=1
+					line = answ[i]
+
+				parts = line.split()
+
+				if rxstartfull.search(line):
+					func = parts[3]
+					addr = parts[1]
+				else:
+					func = parts[1]
+					addr = None
+
+
+				#Search for file position
+				while not rxpos.search(line):
+					i+=1
+					line = answ[i]
+
+				parts = line.split()
+				pos = parts[-1]
+				[file,lineno] = pos.split(":")
+
+				stack += [[addr,func,file,lineno]]
+
+				i+=1
+
+		except IndexError:
+			pass
+
+		return stack
 
 	def waitForPrompt(self, his):
 		rx = "^\(gdb\)"
